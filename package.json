@@ -1,0 +1,27 @@
+{
+  "name": "report",
+  "version": "1.0.0",
+  "description": "My swell Nuxt.js project",
+  "author": "Zeferis",
+  "private": true,
+  "homepage": "https://SergMuhin/reports",
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "deploy": "gh-pages -d build",
+    "predeploy": "npm run build"
+  },
+  "dependencies": {
+    "bootstrap": "^4.0.0-beta.2",
+    "bootstrap-vue": "^1.0.2",
+    "gh-pages": "^1.2.0",
+    "nuxt": "^1.0.0",
+    "sugar": "^2.0.4",
+    "vue-material": "^1.0.0-beta-10.2"
+  },
+  "devDependencies": {
+    "cross-env": "^5.0.1"
+  }
+}
