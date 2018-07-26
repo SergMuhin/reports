@@ -21,18 +21,18 @@
 		<md-table-row slot="md-table-row" slot-scope="{ item }" :data-id="item.id">
 
 			<md-table-cell md-label="Task" md-sort-by="name">
-				<input type="text" :value="item.name" @click="changeTask(item.name, $event)">
+				<input type="text" :value="item.name" @click="changeTask(item.name, $event)" @focus="blur($event)">
 			</md-table-cell>
 
 			<md-table-cell md-label="Name">
-				<input type="text" :value="findUserName(item.user_id)" @click="changeUser(findUserName(item.user_id), $event)">
+				<input type="text" :value="findUserName(item.user_id)" @click="changeUser(findUserName(item.user_id), $event)"  @focus="blur($event)">
 			</md-table-cell>
 
-			<md-table-cell md-label="Time" md-sort-by="time" @click="changeTime(item.time, $event)">
-				<input type="text" :value="item.time" @click="changeTime(item.time, $event)">
+			<md-table-cell md-label="Time" md-sort-by="time"  >
+				<input type="text" @focus="blur($event)" @click="changeTime(item.time, $event)" :value="item.time">
 			</md-table-cell>
 
-			<md-table-cell md-label="Cost" @click="changeTime(item.time, $event)">
+			<md-table-cell md-label="Cost"  @click="changeTime(item.time, $event)">
 				{{ findTaskCost(item.user_id) * item.time }}
 			</md-table-cell>
 
@@ -256,7 +256,7 @@
 					userObj.id = 'some_user_id_'+this.count;
 					taskObj.id = 'some_task_id_'+this.count;
 					taskObj.user_id = 'some_user_id_'+this.count;
-					userObj.price = prompt("Стоимость в час??");
+					userObj.price = +(prompt("Стоимость в час??"));
 					if(!numberRegex.test(userObj.price)) {
 						alert('Не сохранено, нужно ввести число');
 						return false;
@@ -290,8 +290,14 @@
 					this.showSaveButton = true;
 				}
 
-			}
+			},
+			blur(event){
+				// event.target.click();
+				event.target.blur();
+
+			},
 		},
+
 		created () {
 			this.searched = this.tasks
 		},
