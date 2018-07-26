@@ -4,14 +4,13 @@
   "description": "My swell Nuxt.js project",
   "author": "Zeferis",
   "private": true,
-  "homepage": "https://SergMuhin/reports",
+  "homepage": "https://SergMuhin.github.io/reports",
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "deploy": "gh-pages -d build",
-    "predeploy": "npm run build"
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "bootstrap": "^4.0.0-beta.2",

@@ -1,4 +1,5 @@
 <template>
+
 	<div>
 
 		<md-table v-model="searched" md-sort="name" md-sort-order="asc" md-card md-fixed-header>
@@ -8,34 +9,38 @@
 				</div>
 
 				<md-field md-clearable class="md-toolbar-section-end">
-					<md-input placeholder="Search by task name..." v-model="search" @input="searchOnTable" />
+					<md-input id="search" placeholder="Search by task name..." v-model="search" @input="searchOnTable" />
 				</md-field>
 			</md-table-toolbar>
 
 			<md-table-empty-state
 			md-label="No tasks found"
 			:md-description="`No task found for this '${search}' query. Try a different search term or create a new task.`">
-			<md-button class="md-primary md-raised" @click="addNewTask">Create New task</md-button>
 		</md-table-empty-state>
 
 		<md-table-row slot="md-table-row" slot-scope="{ item }" :data-id="item.id">
+
 			<md-table-cell md-label="Task" md-sort-by="name">
 				<input type="text" :value="item.name" @click="changeTask(item.name, $event)">
 			</md-table-cell>
+
 			<md-table-cell md-label="Name">
-				<input type="text" :value="findUserName(item.user_id)" >
+				<input type="text" :value="findUserName(item.user_id)" @click="changeUser(findUserName(item.user_id), $event)">
 			</md-table-cell>
+
 			<md-table-cell md-label="Time" md-sort-by="time" @click="changeTime(item.time, $event)">
 				<input type="text" :value="item.time" @click="changeTime(item.time, $event)">
 			</md-table-cell>
-			<md-table-cell md-label="Cost" md-sort-by="time" @click="changeTime(item.time, $event)">
+
+			<md-table-cell md-label="Cost" @click="changeTime(item.time, $event)">
 				{{ findTaskCost(item.user_id) * item.time }}
 			</md-table-cell>
 
-			<md-table-cell md-label="Actions" md-sort-by="title">{{ item.title }}</md-table-cell>
+			<md-table-cell md-label="Actions">
+				<md-button class="md-raised md-accent" @click="deleteTask($event)">Удалить</md-button>
+			</md-table-cell>
+
 		</md-table-row>
-
-
 
 	</md-table>
 
@@ -50,7 +55,7 @@
 
 	<p>Всего задач: {{ tasks.length}}</p>
 
-	<p>Всего людей: {{ userss.unique().length}}</p>
+	<p>Всего людей: {{ users.unique().length}}</p>
 
 	<p>Всего часов: {{ tasks.sum((task) => {
 		return +(task.time);
@@ -58,9 +63,8 @@
 
 	<p>Всего стоимость: {{ cost }}</p>
 
-
-
 </div>
+
 </template>
 
 <script>
@@ -86,7 +90,7 @@
 				search: null,
 				searched: [],
 				count: 0,
-				userss:  [
+				users:  [
 				{
 					id:'4F0C3B4C-D8D8-4F01-9D9D-03758936EC05',
 					name:'Иванов',
@@ -129,25 +133,28 @@
 		},
 		methods: {
 			findUserName(user_id) {
-				let user = this.userss.find(user => {
+				let user = this.users.find(user => {
 					return user.id === user_id;
 				})
 				return user.name;
 			},
 			findTaskCost(user_id) {
-				let user = this.userss.find(user => {
+				let user = this.users.find(user => {
 					return user.id === user_id
 				})
 				return user.price
 			},
 			saveTasks() {
-				console.dir(this.tasks)
+				console.log('-------------------');
+				console.log('ОТПРАВКА НА СЕРВЕР');
+				console.log('TASKS');
+				console.dir(this.tasks);
+				console.log('USERS');
+				console.dir(this.users);
 			},
-			changeTask(val, event) {
+			changeTask(prevValue, event) {
 				let taskId = event.target.closest('.md-table-row').dataset.id
-				// alert(event.target.closest('.md-table-row').dataset.id);
-				let prevValue = val;
-				let newValue = prompt('', val);
+				let newValue = prompt('', prevValue);
 
 				if (prevValue != newValue) {
 					var changedTask = this.tasks.find(task => {
@@ -161,22 +168,23 @@
 					}
 
 				}
-
-
 			},
-			changeTime(val, event) {
+			changeTime(prevValue, event) {
 				let taskId = event.target.closest('.md-table-row').dataset.id
-				console.log('taskId =', taskId);
-				// alert(event.target.closest('.md-table-row').dataset.id);
-				let prevValue = val;
-				let newValue = prompt('', val);
+				let newValue = prompt('', prevValue);
 
 				if (prevValue != newValue) {
-					console.log('ok')
 					var changedTask = this.tasks.find(task => {
 						return task.id == taskId
 					})
-					console.dir(changedTask)
+
+					var numberRegex = /^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/;
+
+					if(!numberRegex.test(newValue)) {
+						alert('Не сохранено, нужно ввести число');
+						return false;
+					}
+
 					changedTask.time = newValue;
 
 					if(this.showSaveButton === false) {
@@ -184,21 +192,30 @@
 					}
 
 				}
-
-
 			},
-			changeUser(val, event) {
-				let taskId = event.target.closest('.md-table-row').dataset.id
-				// alert(event.target.closest('.md-table-row').dataset.id);
-				let prevValue = val;
-				let newValue = prompt('', val);
+			changeUser(prevValue, event) {
+
+				let newValue = prompt('', prevValue);
 
 				if (prevValue != newValue) {
-					var changedTask = this.tasks.find(task => {
-						return task.id == taskId
+					var changedUserIndex = this.users.findIndex(user => {
+						return user.name == prevValue
+					});
+
+					var oldUser = this.users.find(user => {
+						return user.name == newValue
 					})
-					console.dir(changedTask)
-					changedTask.user = newValue;
+
+					if(oldUser) {
+						let taskId = event.target.closest('.md-table-row').dataset.id;
+						var changedTask = this.tasks.find(task => {
+							return task.id == taskId
+						});
+						changedTask.user_id = oldUser.id
+						this.users.splice(this.tasks.indexOf(prevValue), 1);
+					} else {
+						this.users[changedUserIndex].name = newValue
+					}
 
 					if(this.showSaveButton === false) {
 						this.showSaveButton = true;
@@ -207,39 +224,67 @@
 
 
 			},
-			newUser () {
-				window.alert('Noop')
-			},
 			searchOnTable () {
 				this.searched = searchByName(this.tasks, this.search)
 			},
 			addNewTask() {
 
+				document.getElementById('search').value = '';
+				this.search = null;
+				this.searched = this.tasks;
+
 				var taskObj = {};
 				taskObj.name = prompt("Задача?");
 				taskObj.time = prompt("Сколько часов??");
 
+				var numberRegex = /^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/;
+
+				if(!numberRegex.test(taskObj.time)) {
+					alert('Не сохранено, нужно ввести число');
+					return false;
+				}
+
 				var userObj = {};
 				userObj.name = prompt("Исполнитель?");
 
-				if(this.userss.some(user => {return user.name === userObj.name} )) {
-					var index = this.userss.findIndex(user => {return user.name === userObj.name});
-					userObj.id = this.userss[index].id;
-					userObj.price = this.userss[index].price;
-					taskObj.user_id = this.userss[index].id;
+				if(this.users.some(user => {return user.name === userObj.name} )) {
+					var index = this.users.findIndex(user => {return user.name === userObj.name});
+					userObj.id = this.users[index].id;
+					userObj.price = this.users[index].price;
+					taskObj.user_id = this.users[index].id;
 				} else {
-					userObj.id = 'some_user_id'+this.count;
-					taskObj.id = 'some_user_id'+this.count;
-					taskObj.user_id = 'some_user_id'+this.count;
+					userObj.id = 'some_user_id_'+this.count;
+					taskObj.id = 'some_task_id_'+this.count;
+					taskObj.user_id = 'some_user_id_'+this.count;
 					userObj.price = prompt("Стоимость в час??");
+					if(!numberRegex.test(userObj.price)) {
+						alert('Не сохранено, нужно ввести число');
+						return false;
+					}
 					this.count++;
 				}
 
 				this.tasks.push(taskObj);
-				this.userss.push(userObj);
+				this.users.push(userObj);
 
-				let elems = document.querySelectorAll('.md-table-row');
-				elems[elems.length-1].dataset.id = taskObj.id;
+				if(this.showSaveButton === false) {
+					this.showSaveButton = true;
+				}
+
+				setTimeout(function() {
+
+				},200)
+
+
+			},
+
+			deleteTask(event) {
+
+				let taskId = event.target.closest('.md-table-row').dataset.id;
+				var changedTask = this.tasks.find(task => {
+					return task.id == taskId
+				});
+				this.tasks.splice(this.tasks.indexOf(changedTask),1);
 
 				if(this.showSaveButton === false) {
 					this.showSaveButton = true;
@@ -254,7 +299,7 @@
 			cost() {
 				var summ = 0;
 				this.tasks.forEach(task => {
-					var user = this.userss.find(user => {
+					var user = this.users.find(user => {
 						return user.id === task.user_id}
 						)
 					summ += task.time * user.price;
@@ -267,6 +312,7 @@
 </script>
 
 <style>
+
 	body {
 		text-align: center;
 	}
